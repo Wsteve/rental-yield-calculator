@@ -7,17 +7,15 @@
   <title>资产随手查 - 租房计算器</title>
   <style>
     :root {
-      --brand: #A68B7A;
-      --brand-dark: #8C7262;
-      --brand-light: #C4B0A3;
-      --accent: #F2C94C;
-      --bg: #F5F5F5;
-      --card: #FFFFFF;
-      --text: #333333;
-      --text-light: #999999;
-      --border: #E8E8E8;
-      --danger: #E85A5A;
-      --success: #52C41A;
+      --brand: #07C160;
+      --brand-dark: #06AD56;
+      --brand-deep: #05954b;
+      --text: #1A1A1A;
+      --text-light: #6E7B73;
+      --border: rgba(255,255,255,0.45);
+      --glass: rgba(255,255,255,0.42);
+      --glass-strong: rgba(255,255,255,0.6);
+      --glass-green: rgba(7,193,96,0.38);
     }
 
     * {
@@ -28,55 +26,125 @@
     }
 
     html, body {
-      height: 100%;
+      min-height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
       color: var(--text);
       font-size: 16px;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* iPhone 底部安全区 */
-    .safe-bottom {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* 透明风格背景：绿色渐变 + 模糊光晕 */
+    body {
+      background: linear-gradient(160deg, #0AC267 0%, #0AA886 48%, #0B8FB8 100%);
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* 顶部结果卡片 */
-    .result-card {
-      background: linear-gradient(180deg, var(--brand) 0%, var(--brand-dark) 100%);
-      color: #fff;
-      padding: 16px;
-      padding-top: max(16px, env(safe-area-inset-top, 16px));
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    body::before {
+      width: 280px;
+      height: 280px;
+      background: rgba(180,255,210,0.7);
+      top: -60px;
+      right: -80px;
+    }
+
+    body::after {
+      width: 320px;
+      height: 320px;
+      background: rgba(10,160,180,0.6);
+      bottom: -100px;
+      left: -120px;
+    }
+
+    .page {
       position: relative;
-      overflow: hidden;
+      z-index: 1;
+      min-height: 100vh;
+      padding-bottom: 90px;
+    }
+
+    /* 玻璃顶部导航 */
+    .wx-nav {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      border-bottom: 1px solid var(--border);
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .wx-nav-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    }
+
+    .wx-nav-dot {
+      position: absolute;
+      left: 16px;
+      width: 8px;
+      height: 8px;
+      border-left: 2px solid rgba(255,255,255,0.85);
+      border-bottom: 2px solid rgba(255,255,255,0.85);
+      transform: rotate(45deg);
+    }
+
+    /* 玻璃结果卡片 */
+    .result-card {
+      margin: 14px;
+      background: var(--glass-green);
+      -webkit-backdrop-filter: blur(22px);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 18px;
+      color: #fff;
+      padding: 18px 16px 16px;
+      box-shadow: 0 8px 30px rgba(0,80,40,0.18);
     }
 
     .result-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .result-title {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      font-size: 16px;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     .share-btns {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     .share-btn {
-      border: 1px solid rgba(255,255,255,0.45);
-      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.18);
       color: #fff;
       font-size: 12px;
-      padding: 4px 9px;
-      border-radius: 20px;
+      padding: 4px 10px;
+      border-radius: 16px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -89,7 +157,6 @@
       height: 12px;
       background-size: contain;
       background-repeat: no-repeat;
-      opacity: 0.9;
     }
 
     .share-friend::before {
@@ -102,30 +169,31 @@
 
     .big-result {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .big-number {
       font-size: 52px;
-      font-weight: 500;
-      color: var(--accent);
-      line-height: 1.1;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.05;
       font-variant-numeric: tabular-nums;
+      text-shadow: 0 2px 8px rgba(0,80,40,0.25);
     }
 
     .big-unit {
       font-size: 24px;
-      color: var(--accent);
-      margin-left: 4px;
+      color: rgba(255,255,255,0.85);
+      margin: 0 2px;
     }
 
     .summary-row {
       display: flex;
       justify-content: space-around;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
       border-radius: 12px;
       padding: 12px 0;
-      margin-top: 4px;
     }
 
     .summary-item {
@@ -141,8 +209,8 @@
       top: 50%;
       transform: translateY(-50%);
       width: 1px;
-      height: 60%;
-      background: rgba(255,255,255,0.2);
+      height: 56%;
+      background: rgba(255,255,255,0.3);
     }
 
     .summary-label {
@@ -157,21 +225,24 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 输入区 */
+    /* 玻璃输入区 */
     .form-card {
-      background: var(--card);
-      margin: 12px;
-      border-radius: 16px;
-      padding: 8px 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      margin-bottom: 110px;
+      margin: 14px;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(22px);
+      backdrop-filter: blur(22px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 0 16px;
+      box-shadow: 0 8px 30px rgba(0,40,30,0.12);
     }
 
     .form-row {
       display: flex;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
+      min-height: 52px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
     }
 
     .form-row:last-child {
@@ -179,10 +250,11 @@
     }
 
     .form-label {
-      width: 88px;
+      width: 84px;
       font-size: 15px;
-      color: var(--text-light);
+      color: var(--text);
       flex-shrink: 0;
+      font-weight: 500;
     }
 
     .form-input-wrap {
@@ -194,24 +266,27 @@
     }
 
     .form-input {
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.6);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 9px 12px;
       font-size: 16px;
       color: var(--text);
       text-align: right;
-      width: 160px;
+      width: 150px;
       outline: none;
-      transition: border-color 0.2s;
+      background: rgba(255,255,255,0.55);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
       font-variant-numeric: tabular-nums;
     }
 
     .form-input:focus {
       border-color: var(--brand);
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 0 0 3px rgba(7,193,96,0.22);
     }
 
     .form-input::placeholder {
-      color: #CCCCCC;
+      color: #9aa39e;
     }
 
     .form-unit {
@@ -225,36 +300,38 @@
     .stepper {
       display: flex;
       align-items: center;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.6);
       border-radius: 8px;
       overflow: hidden;
-      width: 160px;
+      width: 150px;
+      background: rgba(255,255,255,0.55);
     }
 
     .stepper-input {
       flex: 1;
       border: none;
       text-align: center;
-      padding: 10px 4px;
+      padding: 9px 4px;
       font-size: 16px;
       outline: none;
+      background: transparent;
       font-variant-numeric: tabular-nums;
     }
 
     .stepper-btns {
       display: flex;
       flex-direction: column;
-      border-left: 1px solid var(--border);
-      width: 38px;
+      border-left: 1px solid rgba(255,255,255,0.6);
+      width: 36px;
       flex-shrink: 0;
     }
 
     .stepper-btn {
       flex: 1;
-      background: #fff;
+      background: rgba(7,193,96,0.12);
       border: none;
       font-size: 16px;
-      color: var(--text);
+      color: var(--brand-deep);
       cursor: pointer;
       line-height: 1;
       padding: 6px 0;
@@ -262,64 +339,31 @@
     }
 
     .stepper-btn:first-child {
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
     }
 
     .stepper-btn:active {
-      background: #f5f5f5;
+      background: rgba(7,193,96,0.28);
     }
 
-    /* 底部按钮 */
-    .footer-actions {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #fff;
-      padding: 12px 16px;
-      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
-      box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
+    /* 底部说明 + 公式链接 */
+    .footer-note {
       display: flex;
-      gap: 12px;
-      z-index: 50;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 14px 0;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 500;
-      text-align: center;
-      cursor: pointer;
-      border: 1px solid transparent;
-      user-select: none;
-      transition: opacity 0.15s;
-    }
-
-    .btn:active {
-      opacity: 0.85;
-    }
-
-    .btn-primary {
-      background: var(--brand);
-      color: #fff;
-      border-color: var(--brand);
-    }
-
-    .btn-default {
-      background: #fff;
-      color: var(--text);
-      border-color: var(--border);
+      align-items: center;
+      padding: 4px 16px 0;
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     .formula-link {
       display: inline-flex;
       align-items: center;
-      color: var(--text-light);
+      color: #fff;
       font-size: 13px;
       text-decoration: none;
       margin-left: auto;
+      font-weight: 500;
     }
 
     .formula-link::after {
@@ -327,23 +371,60 @@
       margin-left: 2px;
     }
 
-    .footer-note {
+    /* 底部玻璃按钮 */
+    .footer-actions {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--glass-strong);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 10px 16px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+      border-top: 1px solid var(--border);
       display: flex;
-      align-items: center;
-      padding: 8px 16px 0;
-      color: var(--text-light);
-      font-size: 12px;
+      gap: 12px;
+      z-index: 50;
     }
 
-    .footer-note .formula-link {
-      margin-left: auto;
+    .btn {
+      flex: 1;
+      padding: 13px 0;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      user-select: none;
+      transition: opacity 0.15s, transform 0.05s;
     }
 
-    /* 弹窗 */
+    .btn:active {
+      opacity: 0.92;
+      transform: scale(0.99);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #09D06B 0%, var(--brand) 100%);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(7,193,96,0.4);
+    }
+
+    .btn-default {
+      background: rgba(255,255,255,0.55);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    /* 玻璃公式弹窗 */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,30,20,0.35);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
       z-index: 100;
       display: none;
       align-items: flex-end;
@@ -355,12 +436,15 @@
     }
 
     .modal {
-      background: #fff;
+      background: rgba(255,255,255,0.72);
+      -webkit-backdrop-filter: blur(26px);
+      backdrop-filter: blur(26px);
       width: 100%;
-      max-height: 80vh;
+      max-height: 82vh;
       border-radius: 20px 20px 0 0;
-      padding: 20px;
-      padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+      border-top: 1px solid rgba(255,255,255,0.7);
+      padding: 18px 16px;
+      padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
       transform: translateY(100%);
       transition: transform 0.25s ease-out;
       overflow-y: auto;
@@ -372,14 +456,14 @@
 
     .modal-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       position: relative;
     }
 
     .modal-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
-      color: var(--brand);
+      color: var(--text);
     }
 
     .modal-close {
@@ -399,29 +483,34 @@
     }
 
     .formula-item {
-      margin-bottom: 18px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 12px;
+      padding: 12px 14px;
     }
 
     .formula-name {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
+      color: var(--brand-deep);
       margin-bottom: 6px;
     }
 
     .formula-expr {
-      color: var(--text-light);
+      color: #444;
       font-size: 14px;
-      background: var(--bg);
-      padding: 10px 12px;
+      background: rgba(255,255,255,0.6);
+      padding: 8px 10px;
       border-radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
     }
 
     .formula-note {
       color: var(--text-light);
-      font-size: 13px;
-      margin-top: 16px;
+      font-size: 12px;
+      margin-top: 14px;
       line-height: 1.6;
+      padding: 0 2px;
     }
 
     .toast {
@@ -429,15 +518,17 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.92);
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.78);
       color: #fff;
       padding: 12px 20px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s, transform 0.2s;
       z-index: 200;
+      max-width: 80%;
+      text-align: center;
     }
 
     .toast.show {
@@ -447,109 +538,116 @@
   </style>
 </head>
 <body>
-  <div class="result-card">
-    <div class="result-header">
-      <div class="result-title">预期收益/年化回报率</div>
-      <div class="share-btns">
-        <span class="share-btn share-friend" onclick="share('friend')">分享好友</span>
-        <span class="share-btn share-moment" onclick="share('moment')">分享朋友圈</span>
-      </div>
+  <div class="page">
+    <div class="wx-nav">
+      <span class="wx-nav-dot"></span>
+      <span class="wx-nav-title">资产随手查</span>
     </div>
 
-    <div class="big-result">
-      <span class="big-number" id="bigProfit">0</span>
-      <span class="big-unit">/</span>
-      <span class="big-number" id="bigRoi">0%</span>
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-item">
-        <div class="summary-label">月溢价</div>
-        <div class="summary-value" id="monthPremium">0</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">收房成本</div>
-        <div class="summary-value" id="acqCost">0</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">回本周期</div>
-        <div class="summary-value" id="payback">0月</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-note">
-    <span>说明：计算结果仅供参考</span>
-    <a href="#" class="formula-link" onclick="openFormula(event)">计算公式</a>
-  </div>
-
-  <div class="form-card">
-    <div class="form-row">
-      <label class="form-label">收房价</label>
-      <div class="form-input-wrap">
-        <input class="form-input" type="number" inputmode="decimal" id="rentIn" placeholder="0">
-        <span class="form-unit">元</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">出房价</label>
-      <div class="form-input-wrap">
-        <input class="form-input" type="number" inputmode="decimal" id="rentOut" placeholder="0">
-        <span class="form-unit">元</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">中介费</label>
-      <div class="form-input-wrap">
-        <input class="form-input" type="number" inputmode="decimal" id="agencyFee" placeholder="0">
-        <span class="form-unit">元</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">免租期</label>
-      <div class="form-input-wrap">
-        <div class="stepper">
-          <input class="stepper-input" type="number" inputmode="numeric" id="freeDays" value="0" min="0">
-          <div class="stepper-btns">
-            <button class="stepper-btn" onclick="adjust('freeDays', 1)">+</button>
-            <button class="stepper-btn" onclick="adjust('freeDays', -1)">−</button>
-          </div>
+    <div class="result-card">
+      <div class="result-header">
+        <div class="result-title">预期收益 / 年化回报率</div>
+        <div class="share-btns">
+          <span class="share-btn share-friend" onclick="share('friend')">分享好友</span>
+          <span class="share-btn share-moment" onclick="share('moment')">朋友圈</span>
         </div>
-        <span class="form-unit">天</span>
       </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">空置期</label>
-      <div class="form-input-wrap">
-        <div class="stepper">
-          <input class="stepper-input" type="number" inputmode="numeric" id="vacantDays" value="0" min="0">
-          <div class="stepper-btns">
-            <button class="stepper-btn" onclick="adjust('vacantDays', 1)">+</button>
-            <button class="stepper-btn" onclick="adjust('vacantDays', -1)">−</button>
-          </div>
-        </div>
-        <span class="form-unit">天</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">装修成本</label>
-      <div class="form-input-wrap">
-        <input class="form-input" type="number" inputmode="decimal" id="renoCost" placeholder="0">
-        <span class="form-unit">元</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">合同期限</label>
-      <div class="form-input-wrap">
-        <input class="form-input" type="number" inputmode="decimal" id="contractYears" placeholder="0">
-        <span class="form-unit">年</span>
-      </div>
-    </div>
-  </div>
 
-  <div class="footer-actions">
-    <button class="btn btn-primary" onclick="calculate()">计算</button>
-    <button class="btn btn-default" onclick="resetForm()">重置</button>
+      <div class="big-result">
+        <span class="big-number" id="bigProfit">0</span>
+        <span class="big-unit">/</span>
+        <span class="big-number" id="bigRoi">0%</span>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-item">
+          <div class="summary-label">月溢价</div>
+          <div class="summary-value" id="monthPremium">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">收房成本</div>
+          <div class="summary-value" id="acqCost">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">回本周期</div>
+          <div class="summary-value" id="payback">0月</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span>计算结果仅供参考</span>
+      <a href="#" class="formula-link" onclick="openFormula(event)">计算公式</a>
+    </div>
+
+    <div class="form-card">
+      <div class="form-row">
+        <label class="form-label">收房价</label>
+        <div class="form-input-wrap">
+          <input class="form-input" type="number" inputmode="decimal" id="rentIn" placeholder="0">
+          <span class="form-unit">元</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">出房价</label>
+        <div class="form-input-wrap">
+          <input class="form-input" type="number" inputmode="decimal" id="rentOut" placeholder="0">
+          <span class="form-unit">元</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">中介费</label>
+        <div class="form-input-wrap">
+          <input class="form-input" type="number" inputmode="decimal" id="agencyFee" placeholder="0">
+          <span class="form-unit">元</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">免租期</label>
+        <div class="form-input-wrap">
+          <div class="stepper">
+            <input class="stepper-input" type="number" inputmode="numeric" id="freeDays" value="0" min="0">
+            <div class="stepper-btns">
+              <button class="stepper-btn" onclick="adjust('freeDays', 1)">+</button>
+              <button class="stepper-btn" onclick="adjust('freeDays', -1)">−</button>
+            </div>
+          </div>
+          <span class="form-unit">天</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">空置期</label>
+        <div class="form-input-wrap">
+          <div class="stepper">
+            <input class="stepper-input" type="number" inputmode="numeric" id="vacantDays" value="0" min="0">
+            <div class="stepper-btns">
+              <button class="stepper-btn" onclick="adjust('vacantDays', 1)">+</button>
+              <button class="stepper-btn" onclick="adjust('vacantDays', -1)">−</button>
+            </div>
+          </div>
+          <span class="form-unit">天</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">装修成本</label>
+        <div class="form-input-wrap">
+          <input class="form-input" type="number" inputmode="decimal" id="renoCost" placeholder="0">
+          <span class="form-unit">元</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">合同期限</label>
+        <div class="form-input-wrap">
+          <input class="form-input" type="number" inputmode="decimal" id="contractYears" placeholder="0">
+          <span class="form-unit">年</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-primary" onclick="calculate()">计算</button>
+      <button class="btn btn-default" onclick="resetForm()">重置</button>
+    </div>
   </div>
 
   <div class="modal-overlay" id="formulaModal" onclick="closeFormula(event)">
@@ -573,14 +671,14 @@
         </li>
         <li class="formula-item">
           <div class="formula-name">4. 年化回报率</div>
-          <div class="formula-expr">年化回报率 = 月溢价 × 12(个月) ÷ 收房成本 × 100</div>
+          <div class="formula-expr">年化回报率 = 月溢价 × 12 ÷ 收房成本 × 100</div>
         </li>
         <li class="formula-item">
-          <div class="formula-name">5. 预期收益（含免租期/空置期调整）</div>
+          <div class="formula-name">5. 预期收益（含免租/空置调整）</div>
           <div class="formula-expr">预期收益 = 月溢价 × (12 − 免租期÷30 − 空置期÷30)</div>
         </li>
       </ul>
-      <div class="formula-note">说明：年化回报率单位为 %；计算结果仅供参考。免租期与空置期会按每月30天折算后影响“预期收益/年化回报率”的顶部展示值，回本周期仍按完整月溢价计算。</div>
+      <div class="formula-note">说明：年化回报率单位为 %，结果仅供参考。免租期与空置期按每月 30 天折算后影响顶部展示值，回本周期仍按完整月溢价计算。</div>
     </div>
   </div>
 
@@ -630,7 +728,6 @@
       document.getElementById('bigProfit').textContent = fmt(annualProfit);
       document.getElementById('bigRoi').textContent = fmtRate(roi);
 
-      // 输入合法时震动反馈
       if (navigator.vibrate) navigator.vibrate(8);
     }
 
@@ -661,7 +758,6 @@
     }
 
     function share(target) {
-      // 微信内分享需要调用 JSSDK，H5 页面做提示即可
       showToast(target === 'friend' ? '请点击微信右上角「···」分享给好友' : '请点击微信右上角「···」分享到朋友圈');
     }
 
@@ -672,14 +768,12 @@
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
-    // 回车计算
     document.querySelectorAll('.form-input, .stepper-input').forEach(input => {
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') calculate();
       });
     });
 
-    // 页面加载时默认计算一次（全0）
     resetForm();
   </script>
 </body>
