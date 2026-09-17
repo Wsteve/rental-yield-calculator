@@ -674,11 +674,19 @@
           <div class="formula-expr">年化回报率 = 月溢价 × 12 ÷ 收房成本 × 100</div>
         </li>
         <li class="formula-item">
-          <div class="formula-name">5. 预期收益（含免租/空置调整）</div>
-          <div class="formula-expr">预期收益 = 月溢价 × (12 − 免租期÷30 − 空置期÷30)</div>
+          <div class="formula-name">5. 年利润（含免租/空置调整）</div>
+          <div class="formula-expr">年利润 = 月溢价 × (12 − 免租期÷30 − 空置期÷30)</div>
+        </li>
+        <li class="formula-item">
+          <div class="formula-name">6. 回本年限</div>
+          <div class="formula-expr">回本年限 = 收房成本 ÷ 年利润</div>
+        </li>
+        <li class="formula-item">
+          <div class="formula-name">7. 预期收益（总净利润）</div>
+          <div class="formula-expr">预期收益 = 年利润 × (合同期限 − 回本年限)，不足回本记 0</div>
         </li>
       </ul>
-      <div class="formula-note">说明：年化回报率单位为 %，结果仅供参考。免租期与空置期按每月 30 天折算后影响顶部展示值，回本周期仍按完整月溢价计算。</div>
+      <div class="formula-note">说明：年化回报率单位为 %，结果仅供参考。预期收益指回本（收回装修费 + 中介费）之后，剩余合同年限内每年净利润的总和；若合同期限短于回本年限，则预期收益记为 0。免租期与空置期按每月 30 天折算影响年利润。</div>
     </div>
   </div>
 
@@ -714,18 +722,22 @@
       const renoCost = getVal('renoCost');
       const freeDays = getVal('freeDays');
       const vacantDays = getVal('vacantDays');
+      const contractYrs = getVal('contractYears');
 
       const monthPremium = rentOut - rentIn;
       const acqCost = renoCost + agencyFee;
       const paybackMonths = monthPremium > 0 ? acqCost / monthPremium : 0;
       const operatingMonths = Math.max(0, 12 - freeDays / 30 - vacantDays / 30);
-      const annualProfit = monthPremium * operatingMonths;
-      const roi = acqCost > 0 ? (annualProfit / acqCost) * 100 : 0;
+      const annualProfit = monthPremium * operatingMonths;                 // 年利润
+      const paybackYears = annualProfit > 0 ? acqCost / annualProfit : 0;  // 回本年限
+      const netYears = Math.max(0, contractYrs - paybackYears);          // 回本后剩余盈利年数
+      const totalProfit = annualProfit * netYears;                        // 预期收益（总净利润）
+      const roi = (acqCost > 0 && annualProfit > 0) ? (annualProfit / acqCost) * 100 : 0; // 年化回报率
 
       document.getElementById('monthPremium').textContent = fmt(monthPremium);
       document.getElementById('acqCost').textContent = fmt(acqCost);
       document.getElementById('payback').textContent = paybackMonths > 0 ? fmt(paybackMonths) + '月' : '0月';
-      document.getElementById('bigProfit').textContent = fmt(annualProfit);
+      document.getElementById('bigProfit').textContent = fmt(totalProfit);
       document.getElementById('bigRoi').textContent = fmtRate(roi);
 
       if (navigator.vibrate) navigator.vibrate(8);
